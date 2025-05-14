@@ -2,7 +2,9 @@
 364 Final Project: Features the Python Script for the Malicious File Scanner and the HTML code used to program the Static Website hosted on Amazon Web Services.
 
 Static Website hosted on Amazon Web Services: http://antivirus364.s3-website-us-east-1.amazonaws.com/
+
 GitHub Repository Link with all code files used: https://github.com/ziowm/364Final
+
 1. Project Overview
 	The cybersecurity issue that my project addresses is the issue of malware. Malware, in particular, can include files such as viruses, trojans, or worms. These files are often unnoticed by unsuspecting users and can easily find their way onto people's devices. My project comes in the form of a Python script that, when run, scans an entire folder and detects suspicious files. The goal here is to help users identify and then remove potentially dangerous files from their devices.
 	I chose this topic because malware is one of the most common threats that everyday computer users face today. Many users do not even realize that they have malicious files being stored on their devices. By programming a very basic prototype that can detect some types of malicious files by reading file extensions or MD5 hashes within the files, I wanted to better understand both the technical and human factors in malware detection and response.
