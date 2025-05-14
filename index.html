@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Suspicious File Scanner - Python Malware Detection Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      color: #222;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 2em;
+      background: #fff;
+      box-shadow: 0 4px 24px rgba(0,0,0, 0.09);
+      border-radius: 12px;
+      margin-top: 2em;
+    }
+    h1, h2 {
+      color: #314885;
+    }
+    pre {
+      background: #232729;
+      color: #f8f8f2;
+      padding: 1em;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 1em;
+      line-height: 1.4;
+    }
+    code {
+      /* background: #e0ecff; */
+      padding: 0.1em 0.2em;
+      border-radius: 4px;
+    }
+    .footer {
+      margin-top: 4em;
+      font-size: 0.95em;
+      color: #666;
+      text-align: center;
+    }
+    .downloads {
+      margin-bottom: 2em;
+      display: flex;
+      gap: 1em;
+      flex-wrap: wrap;
+    }
+    .download-btn {
+      display: inline-block;
+      padding: 0.7em 1.4em;
+      background: #4563c7;
+      color: #fff;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(49,72,133,0.09);
+      transition: background 0.2s;
+    }
+    .download-btn:hover {
+      background: #314885;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Suspicious File Scanner<br><small style="font-size: 60%; color:#666;">Demo by Moiz Uddin hosted by Amazon Web Services S3</small><br></h1>
+
+    <div class="downloads">
+      <a class="download-btn" href="scanner.py" download>Download Python Script</a>
+      <a class="download-btn" href="test_files.zip" download>Download Malware Test Files (ZIP)</a>
+    </div>
+    
+    <h2>Overview</h2>
+    <p>
+      <strong>Suspicious File Scanner</strong> is a simple Python program that demonstrates basic malware detection.<br>
+      It scans a chosen folder for two signs of potentially dangerous files:
+      <ol>
+        <li><strong>Suspicious file extensions</strong> (such as <code>.exe</code>, <code>.bat</code>, <code>.scr</code>, <code>.vbs</code>, <code>.js</code>)</li>
+        <li><strong>Known malware file hashes</strong> (for example, a file that has content in it like: <code>virus</code>, or <code>malware</code>, or <code>spyware</code>).</li>
+      </ol>
+      Any files matching these rules are reported to the user as "suspicious."
+    </p>
+
+    <h2>How It Works</h2>
+    <ul>
+      <li>When run, the program repeatedly asks the user to enter a folder path or type <code>quit</code> to exit.</li>
+      <li>For each file in the folder:
+        <ul>
+          <li>If the file has a suspicious extension (like <code>.exe</code>, <code>.bat</code>, <code>.scr</code>, <code>.vbs</code>, <code>.js</code>), it is flagged.</li>
+          <li>Otherwise, the program checks whether the file's hash matches any "known bad" sample (e.g. a file containing just <code>virus</code>, or <code>malware</code>, or <code>spyware</code>).</li>
+        </ul>
+      </li>
+      <li>All suspicious files are listed in the output, with the reason for each.</li>
+    </ul>
+
+    <h2>The Code</h2>
+    <pre><code>
+"""
+Moiz Uddin
+364 Final Project
+Basic Malware Detector
+"""
+
+import os
+import hashlib
+
+#suspicious file extensions
+BAD_EXTENSIONS = [".exe", ".bat", ".scr", ".vbs", ".js"]
+
+#suspicious file hashes to look for
+BAD_HASHES = [
+    "326577fbe6d73973bd67437829bf9301",#= 'virus'
+    "f3f0c6e992b7562598d9865b6fe8b3a6",#= 'malware'
+    "f4abe4bbba17c813595195fffa5fe601"#= 'spyware'
+]
+
+def get_file_hash(filepath):
+    """_summary_
+    calculate MD5 hash of the file
+
+    Args:
+        filepath: the filepath of the folder that the user inputs
+
+    Returns:
+        hashlib: the MD5 hash of the file
+    """
+    try:
+        with open(filepath, "rb") as file: #opens file in binary mode
+            file_contents = file.read() #reads the entire content of the file and loads it into memory at once
+            return hashlib.md5(file_contents).hexdigest() #returns the MD5 hash of the file
+    except:
+        return None #if file cant be read return None
+
+def scan_folder(folder):
+    """_summary_
+    loop through the folder that the user provides and read and analyze each file and determine if it is suspicious or not
+
+    Args:
+        folder: folder that the user inputs at the end of the filepath
+
+    Returns:
+        list: list of suspicious_files in order
+    """
+    #empty list of suspicious files
+    suspicious_files = []
+    
+    #loops through each filename in the folder
+    for filename in os.listdir(folder):
+        filepath = os.path.join(folder, filename)
+        
+        if not os.path.isfile(filepath):
+            #if it is not a file, skip it
+            continue
+            
+        #extract file extension
+        ext = os.path.splitext(filename)[1].lower()
+        if ext in BAD_EXTENSIONS:
+            #read the file extension and if it is one of the BAD_EXTENSIONS, then add it
+            suspicious_files.append((filepath, f"Bad extension: {ext}"))
+            continue
+            
+        #read file
+        file_hash = get_file_hash(filepath)
+        if file_hash in BAD_HASHES:
+            #read the file and see if it has one of the BAD_HASHES
+            suspicious_files.append((filepath, f"Bad hash: {file_hash}"))
+            
+    #return list of suspicious_files in order
+    return suspicious_files
+
+def main():
+    """
+    main function - user interface
+    """
+    print("Welcome to the Suspicious File Scanner by Moiz Uddin") #welcome message
+    while True: #repeats forever until user decides to quit
+        folder = input("\nEnter folder to scan (or type 'quit' to exit): ").strip()
+        
+        #if user types quit then break loop and quit program
+        if folder.lower() == 'quit':
+            print("Exiting the scanner. Goodbye!")
+            break
+
+        #if folder does not exist, print message and restart while loop
+        if not os.path.exists(folder):
+            print("Folder does not exist!")
+            continue
+
+        results = scan_folder(folder)
+
+        if not results: #if no suspicious files are found
+            print("No suspicious files found!")
+        else: #there are suspicious files
+            print("\nFound suspicious files:")
+            #prints files in numbered list and gives reason as to why the file was flagged as suspicious
+            for i, (filepath, reason) in enumerate(results, 1):
+                print(f"{i}. {filepath} - {reason}")
+
+if __name__ == "__main__":
+    main()
+    </code></pre>
+
+        <h2>Example Output</h2>
+    <pre>
+PS C:\Users\moizc\OneDrive\Desktop\python> python scanner.py  
+Welcome to the Suspicious File Scanner by Moiz Uddin
+
+Enter folder to scan (or type 'quit' to exit): C:\Users\moizc\OneDrive\Desktop\virus_folder
+
+Found suspicious files:
+1. C:\Users\moizc\OneDrive\Desktop\virus_folder\dangerous.exe - Bad extension: .exe
+2. C:\Users\moizc\OneDrive\Desktop\virus_folder\script.js - Bad extension: .js
+3. C:\Users\moizc\OneDrive\Desktop\virus_folder\virus.txt - Bad hash: 326577fbe6d73973bd67437829bf9301
+
+Enter folder to scan (or type 'quit' to exit): blahblah
+Folder does not exist!
+
+Enter folder to scan (or type 'quit' to exit): quit
+Exiting the scanner. Goodbye!
+    </pre>
+    
+    <h2>How to Test</h2>
+    <ol>
+      <li>Download the <strong>Python script</strong> and <strong>Malware Test ZIP</strong> from above.</li>
+      <li>Unzip the test files into a folder (for example, <code>virus_folder</code>).</li>
+      <li>Run the Python script in your terminal or command prompt:</li>
+      <pre><code>python scanner.py</code></pre>
+      <li>Scan your test folder and review the results! If you cannot figure it out follow the output provided above.</li>
+    </ol>
+
+    <div class="footer">
+      &copy; Suspicious File Scanner Demo by Moiz Uddin &mdash; Python Malware Detection Example for Tsuh
+    </div>
+  </div>
+</body>
+</html>
